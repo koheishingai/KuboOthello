@@ -1,11 +1,587 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
-</html>
+﻿<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>久保オセロ</title>
+<link rel="stylesheet" type="text/css" href="css/html5reset.css"  />
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<style type="text/css">
+	.rowPropaty { font-size : 25px; color : #000000; }
+	.cellPropaty { font-size : 50px; color : #000000; width: 80px; height : 80px; text-align: center;}
+</style>
+<script>
+	var turnFlg = 0;
+	function init(a) { //行追加
+		turnFlg = 0
+		//row = document.all.myTbl.rows.length
+		for (var i = 0; i < 8 ;i++){
+			var myTbl = document.getElementById("myTbl");
+			var rowCnt = myTbl.rows.length;
+			var newRow = myTbl.insertRow(rowCnt);
+			//newRow.className = "rowPropaty";
+			for (var j = 0; j < 8 ;j++){
+				var newCell = newRow.insertCell(j);
+				newCell.addEventListener("dblclick", getCELL(), false)
+				newCell.className = "cellPropaty";
+			}
+		}
+		myTbl = document.getElementById("myTbl");
+		cell = myTbl.rows[3].cells[3]
+		cell.innerHTML = "○";
+		cell = myTbl.rows[3].cells[4]
+		cell.innerHTML = "●";
+		cell = myTbl.rows[4].cells[4]
+		cell.innerHTML = "○";
+		cell = myTbl.rows[4].cells[3]
+		cell.innerHTML = "●";
+	}
+	function onCheck(e){
+		//var a1 = e.row
+		//alert(a1);
+	}
+	function getCELL(){
+		var myTbl = document.getElementById("myTbl");
+		for (var i=0; i<myTbl.rows.length; i++) { //行位置取得。
+			for (var j=0; j<myTbl.rows[i].cells.length; j++) { //行内セル位置取得。
+				var Cells=myTbl.rows[i].cells[j]; //i番行のj番列のセル "td"
+				Cells.onclick =function(){Mclk(this);} // onclickで 'Mclk'を実行。
+	         }
+		}
+	}
+	function Mclk(Cell) {
+		var rowINX = Cell.parentNode.rowIndex;//Cellの親ノード'tr'の行位置
+		var cellINX = Cell.cellIndex;
+		var cellVal = Cell.innerHTML;
+		var myTbl = document.getElementById("myTbl");
+		cell = myTbl.rows[rowINX].cells[cellINX]
+		if (cellVal === ''){
+			if (turnFlg === 0){
+				checkBlack(cell,0);
+			} else if (turnFlg === 1){
+				checkWhite(cell,0);
+			}
+		}
+    }
+//////////////////////////////////////////ここから黒のロジック/////////////////////////////////////
+	function checkBlack(Cell,o){
+		downCheckB(Cell,o);
+    }
+    function downCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (rowCnt < 8){
+	    	//端はこれ以上マスがないため飛ばす
+	    	if (rowCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellINX];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    //ひっくり返るものがある場合
+	    if ((rowCnt - rowINX) > 1 && iro != ''){
+	    	//何かしからひっくり返ったフラグを渡す
+	    	o = 1;
+	    	//オセロをひっくり返す
+	    	while (rowCnt > rowINX){
+	    		rowCnt = rowCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellINX];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    //他の列をチェック
+	    upCheckB(Cell,o);
+	}
+	function upCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (rowCnt > 0){
+	    	if (rowCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellINX];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while (rowCnt < rowINX){
+	    		rowCnt = rowCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellINX];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    rightCheckB(Cell,o);
+	}
+	function rightCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (cellCnt < 8){
+	    	if (cellCnt === 7){
+	    		break;
+	    	}
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowINX].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while (cellCnt > cellINX){
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowINX].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    leftCheckB(Cell,o);
+	}
+	function leftCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (cellCnt > 0){
+	    	if (cellCnt === 0){
+	    		break;
+	    	}
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowINX].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while (cellCnt < cellINX){
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowINX].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+		}
+		rightDownCheckB(Cell,o);
+	}
+	function rightDownCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt < 8) && (cellCnt < 8)){
+	    	if (rowCnt === 7 || cellCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) > 1 && (cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt > rowINX) && (cellCnt > cellINX)){
+	    		rowCnt = rowCnt - 1;
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    leftDownCheckB(Cell,o);
+	}
+	function leftDownCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt < 8) && (cellCnt > 0)){
+	    	if (rowCnt === 7 || cellCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) > 1 && (cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt > rowINX) && (cellCnt < cellINX)){
+	    		rowCnt = rowCnt - 1;
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    rightUpCheckB(Cell,o);
+	}
+	function rightUpCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt > 0) && (cellCnt < 8)){
+	    	if (rowCnt === 0 || cellCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && (cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt < rowINX) && (cellCnt > cellINX)){
+	    		rowCnt = rowCnt + 1;
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    leftUpCheckB(Cell,o);
+	}
+	function leftUpCheckB(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt > 0) && (cellCnt > 0)){
+	    	if (rowCnt === 0 || cellCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "●" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && (cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt < rowINX) && (cellCnt < cellINX)){
+	    		rowCnt = rowCnt + 1;
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "●";
+	    	}
+	    }
+	    //最後
+	    changeTurnB(Cell,o)
+	}
+	function changeTurnB(Cell,o){
+		//ひっくり返ったものがある場合はターンを変える
+		if(o === 1){
+			//Cell.innerHTML = "●";
+			turnFlg = 1;
+			document.getElementById('turn_id').textContent = "現在のターン：○";
+		}
+	}
+/////////////////////////////////////////////ここまで/////////////////////////////////////////////
+
+//////////////////////////////////////////ここから白のロジック/////////////////////////////////////
+	function checkWhite(Cell,o){
+		downCheckW(Cell,o);
+    }
+    function downCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (rowCnt < 8){
+	    	//端はこれ以上マスがないため飛ばす
+	    	if (rowCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellINX];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    //ひっくり返るものがある場合
+	    if ((rowCnt - rowINX) > 1 && iro != ''){
+	    	//何かしからひっくり返ったフラグを渡す
+	    	o = 1;
+	    	//オセロをひっくり返す
+	    	while (rowCnt > rowINX){
+	    		rowCnt = rowCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellINX];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    //他の列をチェック
+	    upCheckW(Cell,o);
+	}
+	function upCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (rowCnt > 0){
+	    	if (rowCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellINX];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while (rowCnt < rowINX){
+	    		rowCnt = rowCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellINX];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    rightCheckW(Cell,o);
+	}
+	function rightCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (cellCnt < 8){
+	    	if (cellCnt === 7){
+	    		break;
+	    	}
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowINX].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while (cellCnt > cellINX){
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowINX].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    leftCheckW(Cell,o);
+	}
+	function leftCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while (cellCnt > 0){
+	    	if (cellCnt === 0){
+	    		break;
+	    	}
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowINX].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while (cellCnt < cellINX){
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowINX].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+		}
+		rightDownCheckW(Cell,o);
+	}
+	function rightDownCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt < 8) && (cellCnt < 8)){
+	    	if (rowCnt === 7 || cellCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) > 1 && (cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt > rowINX) && (cellCnt > cellINX)){
+	    		rowCnt = rowCnt - 1;
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    leftDownCheckW(Cell,o);
+	}
+	function leftDownCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt < 8) && (cellCnt > 0)){
+	    	if (rowCnt === 7 || cellCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt + 1;
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) > 1 && (cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt > rowINX) && (cellCnt < cellINX)){
+	    		rowCnt = rowCnt - 1;
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    rightUpCheckW(Cell,o);
+	}
+	function rightUpCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt > 0) && (cellCnt < 8)){
+	    	if (rowCnt === 0 || cellCnt === 7){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	cellCnt = cellCnt + 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && (cellCnt - cellINX) > 1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt < rowINX) && (cellCnt > cellINX)){
+	    		rowCnt = rowCnt + 1;
+	    		cellCnt = cellCnt - 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    leftUpCheckW(Cell,o);
+	}
+	function leftUpCheckW(Cell,o){
+    	var rowINX = Cell.parentNode.rowIndex;
+    	var cellINX = Cell.cellIndex;
+    	var rowCnt = Cell.parentNode.rowIndex;
+    	var cellCnt = Cell.cellIndex;
+    	var myTbl = document.getElementById("myTbl");
+    	var val;
+    	var iro;
+	    while ((rowCnt > 0) && (cellCnt > 0)){
+	    	if (rowCnt === 0 || cellCnt === 0){
+	    		break;
+	    	}
+	    	rowCnt = rowCnt - 1;
+	    	cellCnt = cellCnt - 1;
+	    	val = myTbl.rows[rowCnt].cells[cellCnt];
+	    	iro = val.innerHTML
+	    	if (iro === "○" || iro === ''){
+	    		break;
+	    	}
+	    }
+	    if ((rowCnt - rowINX) < -1 && (cellCnt - cellINX) < -1 && iro != ''){
+	    	o = 1;
+	    	while ((rowCnt < rowINX) && (cellCnt < cellINX)){
+	    		rowCnt = rowCnt + 1;
+	    		cellCnt = cellCnt + 1;
+	    		val = myTbl.rows[rowCnt].cells[cellCnt];
+	    		val.innerHTML = "○";
+	    	}
+	    }
+	    //最後
+	    changeTurnW(Cell,o)
+	}
+	function changeTurnW(Cell,o){
+		//ひっくり返ったものがある場合はターンを変える
+		if(o === 1){
+			//Cell.innerHTML = "○";
+			turnFlg = 0;
+			document.getElementById('turn_id').textContent = "現在のターン：●";
+		}
+	}
+/////////////////////////////////////////////ここまで/////////////////////////////////////////////
+	//すべてのマスをチェック
+	function allCheck(){
+		
+	}
+</script>
+</head>
+<body onLoad ="init()">
+	<input onclick="location.reload();" value="リセット" type=button></input>
+	<div id = "turn_id" style = "font-size : 40px;">現在のターン：●</div>
+	<table  border= "1" rules="all" id="myTbl"></table>
+</body>
